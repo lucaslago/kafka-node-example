@@ -1,3 +1,3 @@
 module.exports = {
-  zookeeperUrl: 'zookeeper:2181'
+  zookeeperUrl: 'localhost:2181'
 };
