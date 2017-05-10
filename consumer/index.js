@@ -1,7 +1,8 @@
 const Kafka = require('node-rdkafka');
 
 const consumer = new Kafka.KafkaConsumer({ 
-  'group.id': 'kafka',
+  'client.id': 'example-node-kafka',
+  'group.id': 'squad-a',
   'metadata.broker.list': 'localhost:9092'
 });
 
@@ -21,6 +22,7 @@ consumer.on('ready', (arg) => {
 });
 
 consumer.on('data', (m) => {
+  console.log('[CONSUMER 1]');
   console.log(JSON.stringify(m));
   console.log(m.value.toString());
 });
@@ -30,3 +32,4 @@ consumer.on('disconnected', (arg) => {
 });
 
 consumer.connect();
+
