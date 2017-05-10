@@ -1,20 +1,30 @@
-const Kafka = require('kafka-node');
-const kafkaClient = require('../kafka');
-const producer = new Kafka.Producer(kafkaClient);
-
-const topic = 'darksouls';
+const Kafka = require('node-rdkafka');
+const TOPIC_NAME = 'darksouls';
 const messages = process.argv.slice(2);
 
-producer.on('ready', () => {
-  console.log('producer ready')
-  producer.send([{topic, messages}], (err, data) => {
-    if(err) {
-      console.log(err);
-      return err;
-    }
-    console.log('sent topic: ', data);
-    process.exit(0);
-  })
+const producer = new Kafka.Producer({
+  'metadata.broker.list': 'localhost:9092'
 });
 
-producer.on('error', error =>  console.log(error));
+//logging all errors
+producer.on('error', (err) => {
+  console.error('Error from producer');
+  console.error(err);
+});
+
+producer.on('ready', (arg) => {
+  console.log('producer ready.' + JSON.stringify(arg));
+  const topic = producer.Topic(TOPIC_NAME);
+  const partition = -1;
+  console.time('producing');
+  for(let message of messages) {
+    producer.produce(topic, partition, new Buffer(message));
+  }
+  console.timeEnd('producing');
+});
+
+producer.on('disconnected', function(arg) {
+  console.log('producer disconnected. ' + JSON.stringify(arg));
+});
+
+producer.connect();
