@@ -1,6 +1,10 @@
 const Kafka = require('node-rdkafka');
 
-const consumer = new Kafka.KafkaConsumer({ 'group.id': 'kafka', 'metadata.broker.list': 'localhost:9092' });
+const consumer = new Kafka.KafkaConsumer({ 
+  'group.id': 'kafka',
+  'metadata.broker.list': 'localhost:9092'
+});
+
 const TOPIC_NAME = 'darksouls';
 
 consumer.on('event.log', log => console.log(log))
@@ -26,4 +30,3 @@ consumer.on('disconnected', (arg) => {
 });
 
 consumer.connect();
-
