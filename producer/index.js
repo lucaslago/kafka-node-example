@@ -3,6 +3,7 @@ const TOPIC_NAME = 'darksouls';
 const messages = process.argv.slice(2);
 
 const producer = new Kafka.Producer({
+  'client.id': 'example-node-kafka',
   'metadata.broker.list': 'localhost:9092'
 });
 
