@@ -1,7 +1,7 @@
 'use strict';
 const Kafka = require('no-kafka');
-const cert = 'your signed certificate';
-const key = 'your private key';
+const cert = process.env.CLOUDKARAFKA_CERT;
+const key = process.env.CLOUDKARAFKA_PRIVATE_KEY;
 const connectionString = 'steamer-01.srvs.cloudkafka.com:9093,steamer-03.srvs.cloudkafka.com:9093,steamer-02.srvs.cloudkafka.com:9093';
 
 const config = {
@@ -12,7 +12,7 @@ const config = {
     key,
   },
   startingOffset: Kafka.LATEST_OFFSET
-}
+};
 
 const consumer = new Kafka.GroupConsumer(config);
 const dataHandler = (messageSet, topic, partition) => {
