@@ -28,7 +28,4 @@ const strategies = [{
 }];
 
 return consumer
-  .init(strategies)
-  .then(() => {
-    return consumer.subscribe('dj5c-darksouls', dataHandler);
-  });
+  .init(strategies);
