@@ -17,7 +17,7 @@ const config = {
 const consumer = new Kafka.GroupConsumer(config);
 const dataHandler = (messageSet, topic, partition) => {
   console.log('Messages to be committed: ', messageSet)
-  return Promise.all(messageSet.forEach((m) => {
+  return Promise.all(messageSet.map((m) => {
     console.log(topic, partition, m.offset, m.message.value.toString('utf8'));
     return consumer.commitOffset({topic, partition, offset: m.offset});
   }));
