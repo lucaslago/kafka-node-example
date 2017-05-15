@@ -1,35 +1,34 @@
-const Kafka = require('node-rdkafka');
+'use strict';
+const Kafka = require('no-kafka');
+const cert = 'your signed certificate';
+const key = 'your private key';
+const connectionString = 'steamer-01.srvs.cloudkafka.com:9093,steamer-03.srvs.cloudkafka.com:9093,steamer-02.srvs.cloudkafka.com:9093';
 
-const consumer = new Kafka.KafkaConsumer({ 
-  'client.id': 'example-node-kafka',
-  'group.id': 'squad-a',
-  'metadata.broker.list': 'localhost:9092'
-});
+const config = {
+  groupId: 'squad-a',
+  connectionString,
+  ssl: {
+    cert,
+    key,
+  },
+  startingOffset: Kafka.LATEST_OFFSET
+}
 
-const TOPIC_NAME = 'darksouls';
+const consumer = new Kafka.GroupConsumer(config);
+const dataHandler = (messageSet, topic, partition) => {
+  console.log('Messages to be committed: ', messageSet)
+  return Promise.all(messageSet.forEach((m) => {
+    console.log(topic, partition, m.offset, m.message.value.toString('utf8'));
+    return consumer.commitOffset({topic, partition, offset: m.offset});
+  }));
+};
+const strategies = [{
+  handler: dataHandler,
+  subscriptions: ['dj5c-darksouls']
+}];
 
-consumer.on('event.log', log => console.log(log))
-
-consumer.on('error', (err) => {
-  console.error('Error from consumer');
-  console.error(err);
-});
-
-consumer.on('ready', (arg) => {
-  console.log('consumer ready.', JSON.stringify(arg));
-  consumer.subscribe([TOPIC_NAME]);
-  consumer.consume();
-});
-
-consumer.on('data', (m) => {
-  console.log('[CONSUMER 1]');
-  console.log(JSON.stringify(m));
-  console.log(m.value.toString());
-});
-
-consumer.on('disconnected', (arg) => {
-  console.log('consumer disconnected. ' + JSON.stringify(arg));
-});
-
-consumer.connect();
-
+return consumer
+  .init(strategies)
+  .then(() => {
+    return consumer.subscribe('dj5c-darksouls', dataHandler);
+  });

@@ -1,31 +1,36 @@
-const Kafka = require('node-rdkafka');
-const TOPIC_NAME = 'darksouls';
-const messages = process.argv.slice(2);
+const Kafka = require('no-kafka');
 
-const producer = new Kafka.Producer({
-  'client.id': 'example-node-kafka',
-  'metadata.broker.list': 'localhost:9092'
-});
+const cert = 'your signed certificate';
 
-//logging all errors
-producer.on('error', (err) => {
-  console.error('Error from producer');
-  console.error(err);
-});
+const key = 'your private key';
+const connectionString = 'steamer-01.srvs.cloudkafka.com:9093,steamer-03.srvs.cloudkafka.com:9093,steamer-02.srvs.cloudkafka.com:9093';
 
-producer.on('ready', (arg) => {
-  console.log('producer ready.' + JSON.stringify(arg));
-  const topic = producer.Topic(TOPIC_NAME);
-  const partition = -1;
-  console.time('producing');
-  for(let message of messages) {
-    producer.produce(topic, partition, new Buffer(message));
+const config = {
+  connectionString,
+  ssl: {
+    cert,
+    key,
   }
-  console.timeEnd('producing');
-});
+}
+const dataHandler = (messageSet, topic, partition) => {
+  messageSet.forEach((m) => {
+    console.log(topic, partition, m.offset, m.message.value.toString('utf8'));
+  });
+};
 
-producer.on('disconnected', function(arg) {
-  console.log('producer disconnected. ' + JSON.stringify(arg));
-});
+const producer = new Kafka.Producer(config);
 
-producer.connect();
+
+return producer.init()
+  .then(() => {
+    return producer.send({
+      topic: 'dj5c-darksouls',
+      partition: 0,
+      message: {
+        value: 'Hello!'
+      }
+    });
+  }).then(function (result) {
+    console.log('success');
+    console.log(result);
+  });
